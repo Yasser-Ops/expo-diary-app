@@ -5,7 +5,7 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
+        headerShown: false, // ✅ hides top headers everywhere
         tabBarActiveTintColor: '#2f95dc',
         tabBarInactiveTintColor: 'gray',
         tabBarStyle: { backgroundColor: '#fff' },
@@ -15,7 +15,9 @@ export default function TabsLayout() {
         name="entry"
         options={{
           title: 'Entries',
-          tabBarIcon: ({ color, size }) => <FontAwesome name="list" color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="list" color={color} size={size} />
+          ),
         }}
       />
 
@@ -23,7 +25,9 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => <FontAwesome name="user" color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="user" color={color} size={size} />
+          ),
         }}
       />
 
@@ -31,7 +35,9 @@ export default function TabsLayout() {
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color, size }) => <FontAwesome name="cog" color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="cog" color={color} size={size} />
+          ),
         }}
       />
     </Tabs>

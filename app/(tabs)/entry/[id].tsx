@@ -1,7 +1,7 @@
 import { useEntries } from '@/hooks/useEntries';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Button, Text, TextInput, View } from 'react-native';
+import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function EntryDetail() {
   const router = useRouter();
@@ -12,10 +12,19 @@ export default function EntryDetail() {
   const [title, setTitle] = useState(entry?.title || '');
 
   useEffect(() => {
-    if (entry) setTitle(entry.title);
+    if (entry && !title) {
+      setTitle(entry.title);
+    }
   }, [entry]);
 
-  if (!entry) return <Text>Entry not found</Text>;
+  if (!entry) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.notFound}>Entry not found</Text>
+        <Button title="Back to Entries" onPress={() => router.back()} />
+      </View>
+    );
+  }
 
   const handleSave = () => {
     updateEntry({ ...entry, title });
@@ -41,15 +50,33 @@ export default function EntryDetail() {
   };
 
   return (
-    <View style={{ flex: 1, padding: 20 }}>
-      <Text>Edit Title:</Text>
+    <View style={styles.container}>
+      <Text style={styles.label}>Edit Title:</Text>
       <TextInput
         value={title}
         onChangeText={setTitle}
-        style={{ borderWidth: 1, borderColor: '#ccc', padding: 10, marginVertical: 10 }}
+        style={styles.input}
+        placeholder="Enter entry title"
       />
-      <Button title="Save" onPress={handleSave} />
-      <Button title="Delete" onPress={handleDelete} color="red" />
+      <View style={styles.actions}>
+        <Button title="Save" onPress={handleSave} />
+        <View style={{ height: 10 }} />
+        <Button title="Delete" onPress={handleDelete} color="red" />
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20 },
+  label: { fontSize: 16, marginBottom: 8 },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  actions: { marginTop: 10 },
+  notFound: { fontSize: 18, color: 'gray', marginBottom: 20 },
+});

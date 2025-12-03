@@ -1,4 +1,3 @@
-// app/(tabs)/settings.tsx
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { Button, StyleSheet, Text, View } from 'react-native';
@@ -8,7 +7,7 @@ export default function Settings() {
 
   const handleLogout = async () => {
     await SecureStore.deleteItemAsync('session');
-    router.replace('/landing'); // navigate to landing page after logout
+    router.replace('/'); // ✅ go back to index.tsx
   };
 
   return (

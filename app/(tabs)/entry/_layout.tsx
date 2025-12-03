@@ -1,35 +1,27 @@
-// app/(tabs)/_layout.tsx
-import { FontAwesome } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Stack } from "expo-router";
 
-export default function TabsLayout() {
+export default function EntryLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Tabs.Screen
-        name="entry"
-        options={{
-          title: 'Entries',
-          tabBarIcon: ({ color, size }) => <FontAwesome name="list" color={color} size={size} />,
-        }}
+    <Stack>
+      <Stack.Screen
+        name="index"
+        options={{ headerTitle: "Entries List" }}
       />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => <FontAwesome name="user" color={color} size={size} />,
-        }}
+      <Stack.Screen
+        name="new"
+        options={{ headerTitle: "New Entry" }}
       />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          tabBarIcon: ({ color, size }) => <FontAwesome name="cog" color={color} size={size} />,
-        }}
+      <Stack.Screen
+        name="[id]"
+        options={({
+          route,
+        }: {
+          route: { params?: { title?: string } };
+        }) => ({
+          // Use the title passed in params, fallback to "Entry Details"
+          headerTitle: route.params?.title ?? "Entry Details",
+        })}
       />
-    </Tabs>
+    </Stack>
   );
 }
