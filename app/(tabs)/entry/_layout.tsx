@@ -1,8 +1,18 @@
+import { useTheme } from "@/hooks/UseTheme";
 import { Stack } from "expo-router";
 
 export default function EntryLayout() {
+  const { darkMode } = useTheme();
+
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: darkMode ? "#000" : "#fff",
+        },
+        headerTintColor: darkMode ? "#fff" : "#000",
+      }}
+    >
       <Stack.Screen
         name="index"
         options={{ headerTitle: "Entries List" }}
