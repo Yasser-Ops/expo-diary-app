@@ -1,4 +1,3 @@
-// hooks/useEntries.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import 'react-native-get-random-values';
@@ -33,7 +32,7 @@ export const EntriesProvider = ({ children }: { children: React.ReactNode }) => 
   }, []);
 
   const saveEntries = async (newEntries: Entry[]) => {
-    setEntries(newEntries); // update in-memory state immediately
+    setEntries(newEntries); 
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newEntries));
   };
 

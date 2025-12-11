@@ -1,4 +1,4 @@
-import { useTheme } from '@/hooks/UseTheme'; // global dark mode
+import { useTheme } from '@/hooks/UseTheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -20,13 +20,13 @@ export default function Login() {
       return;
     }
 
-    // Save a mock session token
+    
     await SecureStore.setItemAsync('session', 'mock-token');
 
     try {
       const existing = await AsyncStorage.getItem(PROFILE_KEY);
       if (existing) {
-        // ✅ Merge with existing profile (keep name + avatar)
+       
         const parsed = JSON.parse(existing);
         const updated = { ...parsed, email: email.trim() };
         await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(updated));
@@ -39,7 +39,7 @@ export default function Login() {
       Alert.alert('Error saving profile');
     }
 
-    // Navigate to tabs after login
+   
     router.replace('/(tabs)/entry');
   }
 

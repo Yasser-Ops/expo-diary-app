@@ -21,9 +21,9 @@ export default function Settings() {
 
   const logout = async () => {
     try {
-      await SecureStore.deleteItemAsync('session'); // remove session token
-      await AsyncStorage.removeItem('user_profile'); // optional: clear profile
-      router.replace('/landing'); // ✅ navigate back to landing
+      await SecureStore.deleteItemAsync('session'); 
+      await AsyncStorage.removeItem('user_profile'); 
+      router.replace('/landing'); //
     } catch {
       Alert.alert('Error', 'Failed to log out.');
     }
