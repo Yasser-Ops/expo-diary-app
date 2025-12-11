@@ -43,12 +43,6 @@ It’s designed as a personal logging tool where you can create, edit, and manag
 
 ---
 
-## Project Structure
-app/ _layout.tsx          # Root layout with providers landing.tsx          # Welcome screen login.tsx            # Login screen (tabs)/ _layout.tsx        # Bottom tab bar entry/ _layout.tsx      # Entry stack layout index.tsx        # Entries list new.tsx          # New entry [id].tsx         # Entry detail/edit profile.tsx        # Profile screen settings.tsx       # Settings screen hooks/ useEntries.tsx       # Entries context useTheme.tsx         # Dark mode context
-
-
----
-
 ## How to Run
 
 1. Install dependencies:
@@ -56,13 +50,15 @@ app/ _layout.tsx          # Root layout with providers landing.tsx          # We
    npm install
 
 2. Start the app:
+   ```bash
    npx expo start
 
 3. Open in Expo Go or run on a simulator.
 
 ---
 
-Notes- This project uses a mock login (no backend).
+## Notes
+- This project uses a mock login (no backend).
 - Profile and entries are stored locally only.
 - Dark mode is global and saved in AsyncStorage.
 - The tab bar and headers adapt to dark mode automatically.
