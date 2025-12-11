@@ -1,50 +1,71 @@
-# Welcome to your Expo app 👋
+# WanderLog
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+WanderLog is a simple mobile app built with **Expo Router** and **React Native**.  
+It’s designed as a personal logging tool where you can create, edit, and manage entries, while also keeping a profile with your name and avatar. The app supports **dark mode** and saves your preferences locally so they stick between sessions.
 
-## Get started
+---
 
-1. Install dependencies
+## Features
 
+- **Authentication (mock)**  
+  Basic login flow with a stored session token using `expo-secure-store`.
+
+- **Profile Management**  
+  Save your name and avatar image. Data is stored in `AsyncStorage` so it persists across app restarts.
+
+- **Entries**  
+  - List all entries  
+  - Create new entries  
+  - Edit or delete existing entries  
+  - Each entry screen respects global dark mode
+
+- **Dark Mode**  
+  Toggle dark mode in Settings. The preference is saved and restored automatically.
+
+- **Settings**  
+  - Dark mode toggle  
+  - Reset all local data  
+  - Logout option (clears session and profile, returns to landing)
+
+- **Navigation**  
+  - Tab bar with multiple screens (Entries, Profile, Settings, plus placeholders for future tabs)  
+  - Stack navigation inside the Entries section (list, new, detail)
+
+---
+
+## Tech Stack
+
+- [React Native](https://reactnative.dev/)  
+- [Expo Router](https://expo.github.io/router/docs)  
+- [AsyncStorage](https://react-native-async-storage.github.io/async-storage/)  
+- [Expo SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/)  
+- [Expo ImagePicker](https://docs.expo.dev/versions/latest/sdk/imagepicker/)  
+
+---
+
+## Project Structure
+app/ _layout.tsx          # Root layout with providers landing.tsx          # Welcome screen login.tsx            # Login screen (tabs)/ _layout.tsx        # Bottom tab bar entry/ _layout.tsx      # Entry stack layout index.tsx        # Entries list new.tsx          # New entry [id].tsx         # Entry detail/edit profile.tsx        # Profile screen settings.tsx       # Settings screen hooks/ useEntries.tsx       # Entries context useTheme.tsx         # Dark mode context
+
+
+---
+
+## How to Run
+
+1. Install dependencies:
    ```bash
    npm install
-   ```
 
-2. Start the app
-
-   ```bash
+2. Start the app:
    npx expo start
-   ```
 
-In the output, you'll find options to open the app in a
+3. Open in Expo Go or run on a simulator.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Notes- This project uses a mock login (no backend).
+- Profile and entries are stored locally only.
+- Dark mode is global and saved in AsyncStorage.
+- The tab bar and headers adapt to dark mode automatically.
 
-## Get a fresh project
 
-When you're ready, run:
 
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
