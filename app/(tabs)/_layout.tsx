@@ -1,14 +1,20 @@
+import { useTheme } from '@/hooks/UseTheme';
 import { FontAwesome } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
 export default function TabsLayout() {
+  const { darkMode } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
-        headerShown: false, // ✅ hides top headers everywhere
-        tabBarActiveTintColor: '#2f95dc',
-        tabBarInactiveTintColor: 'gray',
-        tabBarStyle: { backgroundColor: '#fff' },
+        headerShown: false,
+        tabBarActiveTintColor: darkMode ? '#fff' : '#2f95dc',
+        tabBarInactiveTintColor: darkMode ? '#aaa' : 'gray',
+        tabBarStyle: {
+          backgroundColor: darkMode ? '#000' : '#fff', // ✅ dark mode aware
+          borderTopColor: darkMode ? '#333' : '#ddd',  // ✅ cleaner divider
+        },
       }}
     >
       <Tabs.Screen
@@ -20,7 +26,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="profile"
         options={{
@@ -30,7 +35,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="settings"
         options={{
@@ -40,6 +44,7 @@ export default function TabsLayout() {
           ),
         }}
       />
+      {/* Add your other tabs here */}
     </Tabs>
   );
 }
