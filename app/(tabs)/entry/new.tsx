@@ -11,13 +11,15 @@ export default function NewEntry() {
   const [title, setTitle] = useState('');
   const { darkMode } = useTheme();
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title.trim()) {
       Alert.alert('Title cannot be empty');
       return;
     }
-    addEntry({ title: title.trim() });
-    router.replace('/entry'); // ✅ go back to list safely
+    const created = await addEntry({ title: title.trim() });
+    if (created) {
+      router.replace('/entry'); // バ. go back to list safely
+    }
   };
 
   return (

@@ -1,9 +1,24 @@
 import { useTheme } from '@/hooks/UseTheme';
 import { FontAwesome } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
+import { ActivityIndicator, View } from 'react-native';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function TabsLayout() {
   const { darkMode } = useTheme();
+  const { token, hydrating } = useAuth();
+
+  if (hydrating) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
+  if (!token) {
+    return <Redirect href="/login" />;
+  }
 
   return (
     <Tabs

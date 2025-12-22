@@ -1,5 +1,5 @@
+import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/UseTheme'; // global dark mode context
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import {
@@ -13,38 +13,34 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-interface User {
-  name: string;
-  email: string;
-  avatar?: string;
-}
-
-const PROFILE_KEY = 'user_profile';
-
 export default function Profile() {
-  const [user, setUser] = useState<User>({ name: '', email: '' });
+  const { user, updateProfile, refreshProfile, hydrating } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [avatar, setAvatar] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const { darkMode } = useTheme();
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const data = await AsyncStorage.getItem(PROFILE_KEY);
-        if (data) setUser(JSON.parse(data));
-      } finally {
-        setLoading(false);
+    const load = async () => {
+      const profile = user ?? (await refreshProfile());
+      if (profile) {
+        setName(profile.name);
+        setEmail(profile.email);
+        setAvatar(profile.avatarUrl);
       }
+      setLoading(false);
     };
-    loadUser();
-  }, []);
+    load();
+  }, [user, refreshProfile]);
 
-  const saveUser = async (updated: User) => {
+  const saveUser = async (nextAvatar?: string) => {
     try {
-      setUser(updated);
-      await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(updated));
+      const updated = await updateProfile({ name, avatarUrl: nextAvatar ?? avatar });
+      setAvatar(updated.avatarUrl);
       Alert.alert('Profile saved!');
-    } catch {
-      Alert.alert('Error saving profile');
+    } catch (err) {
+      Alert.alert('Error saving profile', err instanceof Error ? err.message : 'Please try again');
     }
   };
 
@@ -55,11 +51,13 @@ export default function Profile() {
       allowsEditing: true,
     });
     if (!result.canceled && result.assets.length > 0) {
-      saveUser({ ...user, avatar: result.assets[0].uri });
+      const uri = result.assets[0].uri;
+      setAvatar(uri);
+      await saveUser(uri);
     }
   };
 
-  if (loading) {
+  if (loading || hydrating) {
     return (
       <SafeAreaView style={[styles.container, darkMode ? styles.dark : styles.light]}>
         <Text style={[styles.loading, darkMode ? styles.darkText : styles.lightText]}>
@@ -77,8 +75,8 @@ export default function Profile() {
 
       {/* Avatar */}
       <TouchableOpacity style={styles.avatarContainer} onPress={pickAvatar}>
-        {user.avatar ? (
-          <Image source={{ uri: user.avatar }} style={styles.avatar} />
+        {avatar ? (
+          <Image source={{ uri: avatar }} style={styles.avatar} />
         ) : (
           <Text style={[styles.avatarPlaceholder, darkMode ? styles.darkText : styles.lightText]}>
             +
@@ -91,20 +89,16 @@ export default function Profile() {
         <Text style={[styles.label, darkMode ? styles.darkText : styles.lightText]}>Name</Text>
         <TextInput
           style={[styles.input, darkMode ? styles.inputDark : styles.inputLight]}
-          value={user.name}
-          onChangeText={(text) => setUser({ ...user, name: text })}
+          value={name}
+          onChangeText={(text) => setName(text)}
           placeholder="Enter your name"
           placeholderTextColor={darkMode ? '#aaa' : '#666'}
         />
 
         <Text style={[styles.label, darkMode ? styles.darkText : styles.lightText]}>Email</Text>
-        <TextInput
-          style={[styles.input, styles.disabled]}
-          value={user.email}
-          editable={false}
-        />
+        <TextInput style={[styles.input, styles.disabled]} value={email} editable={false} />
 
-        <TouchableOpacity style={styles.saveButton} onPress={() => saveUser(user)}>
+        <TouchableOpacity style={styles.saveButton} onPress={() => saveUser()}>
           <Text style={styles.saveButtonText}>Save Profile</Text>
         </TouchableOpacity>
       </View>

@@ -1,32 +1,24 @@
+import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/UseTheme'; // global theme context
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import { Alert, StyleSheet, Switch, Text, TouchableOpacity } from 'react-native';
+import { Alert, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Settings() {
   const { darkMode, toggleDarkMode } = useTheme();
+  const { logout } = useAuth();
   const router = useRouter();
 
-  const resetData = async () => {
-    try {
-      await AsyncStorage.clear();
-      await SecureStore.deleteItemAsync('session');
-      Alert.alert('Data reset', 'All local data has been cleared.');
-    } catch {
-      Alert.alert('Error', 'Failed to reset data.');
-    }
+  const handleLogout = async () => {
+    await logout();
+    router.replace('/login');
   };
 
-  const logout = async () => {
-    try {
-      await SecureStore.deleteItemAsync('session'); 
-      await AsyncStorage.removeItem('user_profile'); 
-      router.replace('/landing'); //
-    } catch {
-      Alert.alert('Error', 'Failed to log out.');
-    }
+  const confirmLogout = () => {
+    Alert.alert('Log out', 'Are you sure you want to log out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Log out', style: 'destructive', onPress: handleLogout },
+    ]);
   };
 
   return (
@@ -41,13 +33,10 @@ export default function Settings() {
         <Switch value={darkMode} onValueChange={toggleDarkMode} />
       </TouchableOpacity>
 
-      {/* Reset Data Button */}
-      <TouchableOpacity style={styles.resetButton} onPress={resetData}>
-        <Text style={styles.resetButtonText}>Reset All Data</Text>
-      </TouchableOpacity>
+      <View style={{ height: 12 }} />
 
       {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+      <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>
         <Text style={styles.logoutButtonText}>Log Out</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -68,14 +57,6 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   optionLabel: { fontSize: 18 },
-  resetButton: {
-    backgroundColor: '#FF3B30',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  resetButtonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   logoutButton: {
     backgroundColor: '#007AFF',
     padding: 12,

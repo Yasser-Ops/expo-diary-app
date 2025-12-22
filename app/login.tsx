@@ -1,51 +1,64 @@
+import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/UseTheme';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import { useState } from 'react';
-import { Alert, Button, StyleSheet, Text, TextInput } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const PROFILE_KEY = 'user_profile';
 
 export default function Login() {
   const router = useRouter();
+  const { darkMode } = useTheme();
+  const { login, register, token, hydrating } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { darkMode } = useTheme();
+  const [name, setName] = useState('');
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [submitting, setSubmitting] = useState(false);
 
-  async function handleLogin() {
-    if (!email || !password) {
-      Alert.alert('Please enter email and password');
+  useEffect(() => {
+    if (!hydrating && token) {
+      router.replace('/(tabs)/entry');
+    }
+  }, [hydrating, token, router]);
+
+  async function handleSubmit() {
+    if (!email || !password || (mode === 'register' && !name.trim())) {
+      Alert.alert('Please fill in all required fields');
       return;
     }
-
-    
-    await SecureStore.setItemAsync('session', 'mock-token');
-
+    setSubmitting(true);
     try {
-      const existing = await AsyncStorage.getItem(PROFILE_KEY);
-      if (existing) {
-       
-        const parsed = JSON.parse(existing);
-        const updated = { ...parsed, email: email.trim() };
-        await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(updated));
+      if (mode === 'login') {
+        await login(email.trim(), password);
       } else {
-        // ✅ First-time login, create new profile
-        const profile = { name: '', email: email.trim() };
-        await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+        await register(email.trim(), password, name.trim());
       }
+      router.replace('/(tabs)/entry');
     } catch (e) {
-      Alert.alert('Error saving profile');
+      Alert.alert('Authentication failed', e instanceof Error ? e.message : 'Please try again');
+    } finally {
+      setSubmitting(false);
     }
-
-   
-    router.replace('/(tabs)/entry');
   }
 
   return (
     <SafeAreaView style={[styles.container, darkMode ? styles.dark : styles.light]}>
-      <Text style={[styles.title, darkMode ? styles.darkText : styles.lightText]}>Login</Text>
+      <Text style={[styles.title, darkMode ? styles.darkText : styles.lightText]}>
+        {mode === 'login' ? 'Login' : 'Create account'}
+      </Text>
+
+      {mode === 'register' && (
+        <>
+          <Text style={darkMode ? styles.darkText : styles.lightText}>Name</Text>
+          <TextInput
+            style={[styles.input, darkMode ? styles.inputDark : styles.inputLight]}
+            placeholder="Your name"
+            placeholderTextColor={darkMode ? '#aaa' : '#666'}
+            value={name}
+            onChangeText={setName}
+          />
+        </>
+      )}
 
       <Text style={darkMode ? styles.darkText : styles.lightText}>Email</Text>
       <TextInput
@@ -55,6 +68,7 @@ export default function Login() {
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
+        autoCapitalize="none"
       />
 
       <Text style={darkMode ? styles.darkText : styles.lightText}>Password</Text>
@@ -67,7 +81,21 @@ export default function Login() {
         secureTextEntry
       />
 
-      <Button title="Login" onPress={handleLogin} />
+      <Button
+        title={submitting ? 'Please wait...' : mode === 'login' ? 'Login' : 'Register'}
+        onPress={handleSubmit}
+        disabled={submitting}
+      />
+
+      <View style={styles.switchRow}>
+        <Text style={darkMode ? styles.darkText : styles.lightText}>
+          {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}
+        </Text>
+        <Button
+          title={mode === 'login' ? 'Register' : 'Login'}
+          onPress={() => setMode(mode === 'login' ? 'register' : 'login')}
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -87,4 +115,8 @@ const styles = StyleSheet.create({
   },
   inputLight: { borderColor: '#ccc', backgroundColor: '#fff', color: '#000' },
   inputDark: { borderColor: '#555', backgroundColor: '#333', color: '#fff' },
+  switchRow: {
+    marginTop: 20,
+    gap: 10,
+  },
 });

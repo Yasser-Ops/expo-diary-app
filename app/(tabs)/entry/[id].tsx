@@ -8,14 +8,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function EntryDetail() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { entries, updateEntry, deleteEntry } = useEntries();
+  const { entries, updateEntry, deleteEntry, refresh } = useEntries();
   const { darkMode } = useTheme();
 
   const entry = entries.find((e) => e.id === id);
   const [title, setTitle] = useState(entry?.title || '');
 
   useEffect(() => {
-    if (entry && !title) {
+    if (!entry && id) {
+      refresh();
+    }
+  }, [entry, id, refresh]);
+
+  useEffect(() => {
+    if (entry) {
       setTitle(entry.title);
     }
   }, [entry]);
@@ -31,34 +37,30 @@ export default function EntryDetail() {
     );
   }
 
-  const handleSave = () => {
-    updateEntry({ ...entry, title });
-    router.back();
+  const handleSave = async () => {
+    const updated = await updateEntry(entry.id, { title });
+    if (updated) {
+      router.back();
+    }
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      'Delete Entry',
-      'Are you sure you want to delete this entry?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            deleteEntry(entry.id);
-            router.back();
-          },
+    Alert.alert('Delete Entry', 'Are you sure you want to delete this entry?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await deleteEntry(entry.id);
+          router.replace('/entry');
         },
-      ]
-    );
+      },
+    ]);
   };
 
   return (
     <SafeAreaView style={[styles.container, darkMode ? styles.dark : styles.light]}>
-      <Text style={[styles.label, darkMode ? styles.darkText : styles.lightText]}>
-        Edit Title:
-      </Text>
+      <Text style={[styles.label, darkMode ? styles.darkText : styles.lightText]}>Edit Title:</Text>
       <TextInput
         value={title}
         onChangeText={setTitle}

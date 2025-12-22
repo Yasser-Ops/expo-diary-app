@@ -1,11 +1,32 @@
+import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/UseTheme';
-import { useRouter } from 'expo-router';
-import { Button, StyleSheet, Text } from 'react-native';
+import { Redirect, useRouter } from 'expo-router';
+import { useEffect } from 'react';
+import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Landing() {
   const router = useRouter();
   const { darkMode } = useTheme();
+  const { token, hydrating } = useAuth();
+
+  useEffect(() => {
+    if (!hydrating && token) {
+      router.replace('/(tabs)/entry');
+    }
+  }, [hydrating, token, router]);
+
+  if (hydrating) {
+    return (
+      <SafeAreaView style={[styles.container, darkMode ? styles.dark : styles.light]}>
+        <ActivityIndicator />
+      </SafeAreaView>
+    );
+  }
+
+  if (token) {
+    return <Redirect href="/(tabs)/entry" />;
+  }
 
   return (
     <SafeAreaView style={[styles.container, darkMode ? styles.dark : styles.light]}>

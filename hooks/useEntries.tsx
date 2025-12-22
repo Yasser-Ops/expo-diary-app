@@ -1,52 +1,97 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import 'react-native-get-random-values';
-import { v4 as uuidv4 } from 'uuid';
+import { api } from '@/lib/api';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useAuth } from './useAuth';
 
 export interface Entry {
   id: string;
   title: string;
-  category?: string;
+  body?: string | null;
+  tags: string[];
+  mood?: string | null;
+  location?: string | null;
   createdAt: string;
-  isFavorite?: boolean;
+  updatedAt: string;
 }
-
-const STORAGE_KEY = '@entries';
 
 interface EntryContextType {
   entries: Entry[];
-  addEntry: (e: Omit<Entry, 'id' | 'createdAt'>) => void;
-  updateEntry: (e: Entry) => void;
-  deleteEntry: (id: string) => void;
+  loading: boolean;
+  error: string | null;
+  refresh: () => Promise<void>;
+  addEntry: (e: Pick<Entry, 'title'> & Partial<Entry>) => Promise<Entry | null>;
+  updateEntry: (id: string, e: Partial<Entry>) => Promise<Entry | null>;
+  deleteEntry: (id: string) => Promise<void>;
 }
 
 const EntryContext = createContext<EntryContextType | null>(null);
 
 export const EntriesProvider = ({ children }: { children: React.ReactNode }) => {
+  const { token } = useAuth();
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api.get<Entry[]>('/entries');
+      setEntries(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load entries');
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((json) => {
-      if (json) setEntries(JSON.parse(json));
-    });
+    if (!token) {
+      setEntries([]);
+      return;
+    }
+    refresh();
+  }, [token, refresh]);
+
+  const addEntry = useCallback(async (entry: Pick<Entry, 'title'> & Partial<Entry>) => {
+    try {
+      const created = await api.post<Entry>('/entries', {
+        title: entry.title,
+        body: entry.body ?? '',
+        tags: entry.tags ?? [],
+        mood: entry.mood ?? '',
+        location: entry.location ?? '',
+      });
+      setEntries((prev) => [created, ...prev]);
+      return created;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create entry');
+      return null;
+    }
   }, []);
 
-  const saveEntries = async (newEntries: Entry[]) => {
-    setEntries(newEntries); 
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newEntries));
-  };
+  const updateEntry = useCallback(async (id: string, data: Partial<Entry>) => {
+    try {
+      const updated = await api.put<Entry>(`/entries/${id}`, data);
+      setEntries((prev) => prev.map((e) => (e.id === id ? updated : e)));
+      return updated;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update entry');
+      return null;
+    }
+  }, []);
 
-  const addEntry = (entry: Omit<Entry, 'id' | 'createdAt'>) =>
-    saveEntries([{ ...entry, id: uuidv4(), createdAt: new Date().toISOString() }, ...entries]);
-
-  const updateEntry = (updated: Entry) =>
-    saveEntries(entries.map((e) => (e.id === updated.id ? updated : e)));
-
-  const deleteEntry = (id: string) =>
-    saveEntries(entries.filter((e) => e.id !== id));
+  const deleteEntry = useCallback(async (id: string) => {
+    try {
+      await api.delete(`/entries/${id}`);
+      setEntries((prev) => prev.filter((e) => e.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete entry');
+    }
+  }, []);
 
   return (
-    <EntryContext.Provider value={{ entries, addEntry, updateEntry, deleteEntry }}>
+    <EntryContext.Provider value={{ entries, loading, error, refresh, addEntry, updateEntry, deleteEntry }}>
       {children}
     </EntryContext.Provider>
   );

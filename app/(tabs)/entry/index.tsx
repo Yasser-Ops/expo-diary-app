@@ -1,12 +1,12 @@
 import { useEntries } from '@/hooks/useEntries';
 import { useTheme } from '@/hooks/UseTheme'; // global dark mode
 import { useRouter } from 'expo-router';
-import { Button, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Button, FlatList, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function EntryIndex() {
   const router = useRouter();
-  const { entries } = useEntries();
+  const { entries, loading, error, refresh } = useEntries();
   const { darkMode } = useTheme();
 
   const renderItem = ({ item }: { item: { id: string; title: string } }) => (
@@ -28,6 +28,11 @@ export default function EntryIndex() {
         Entries List
       </Text>
 
+      {loading && <ActivityIndicator />}
+      {error && (
+        <Text style={[styles.error, darkMode ? styles.darkText : styles.lightText]}>{error}</Text>
+      )}
+
       {entries.length === 0 ? (
         <Text style={[styles.empty, darkMode ? styles.darkText : styles.lightText]}>
           No entries yet. Add one below!
@@ -38,6 +43,8 @@ export default function EntryIndex() {
 
       <View style={styles.actions}>
         <Button title="New Entry" onPress={() => router.push('/entry/new')} />
+        <View style={{ height: 10 }} />
+        <Button title="Refresh" onPress={refresh} />
       </View>
     </SafeAreaView>
   );
@@ -55,5 +62,6 @@ const styles = StyleSheet.create({
   entryItemDark: { borderBottomColor: '#444' },
   entryTitle: { fontSize: 18 },
   empty: { fontSize: 16, marginBottom: 20 },
+  error: { color: 'red', marginBottom: 10 },
   actions: { marginTop: 20 },
 });
